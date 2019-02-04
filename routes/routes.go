@@ -15,6 +15,7 @@ func LoadRoutes(r *gin.Engine, deps *config.AppDeps) {
 
 	notes := api.Group("/notes")
 	notes.GET("/", actions.GetAllNotes)
+	notes.POST("/", actions.PostNewNode)
 	notes.GET("/:id", notImplementedYet)
 	notes.POST("/:id", notImplementedYet)
 }

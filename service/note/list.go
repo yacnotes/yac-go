@@ -1,38 +1,45 @@
 package note
 
 import (
-	"encoding/json"
 	"github.com/HouzuoGuo/tiedot/db"
-	"yac-go/log"
-	"yac-go/model"
 	"yac-go/model/note"
+	"yac-go/ydb"
 )
 
-func GetAll(d *db.DB, page, total int) map[int]*note.Note {
-	col := d.Use("notes")
+func GetAll(d *db.DB) (map[int]*note.Note, error) {
+	col := d.Use(ydb.ColNotes)
 
-	queryResult := make(map[int]struct{})
-	var query interface{}
-	if err := json.Unmarshal([]byte(`["all"]`), &query); err != nil {
-		log.Panic("Failed to build query:", err)
-	}
-
-	if err := db.EvalQuery(query, col, &queryResult); err != nil {
-		log.Panic("Failed to run query:", err)
+	queryResult, err := ydb.ExecuteQuery(col, []byte(`["all"]`))
+	if err != nil {
+		return nil, err
 	}
 
 	notes := make(map[int]*note.Note)
-
 	for id := range queryResult {
-		plain, err := col.Read(id)
-		if err != nil {
-			log.Panic("Failed to read from query result")
-		}
-
 		n := &note.Note{}
-		model.Marshal(plain, n)
+		if err := ydb.LoadById(col, id, n); err != nil {
+			return nil, err
+		}
 		notes[id] = n
 	}
 
-	return notes
+	return notes, nil
+}
+
+func GetAllIds(d *db.DB) ([]int, error) {
+	col := d.Use(ydb.ColNotes)
+
+	res := make(map[int]struct{})
+	if err := db.EvalAllIDs(col, &res); err != nil {
+		return nil, err
+	}
+
+	i := 0
+	allIds := make([]int, len(res))
+	for id := range res {
+		allIds[i] = id
+		i++
+	}
+
+	return allIds, nil
 }

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 	"yac-go/config"
-	"yac-go/db"
+	"yac-go/ydb"
 	"yac-go/log"
 	"yac-go/middleware"
 	"yac-go/routes"
@@ -32,7 +32,7 @@ func main() {
 	deps := &config.AppDeps{
 		Config: conf,
 	}
-	deps.Db = db.Init(deps)
+	deps.Db = ydb.Init(deps)
 
 	r := gin.New()
 	r.Use(middleware.Logger(deps))
