@@ -27,6 +27,7 @@ func Init(deps *config.AppDeps) *db.DB {
 		log.Info("Created new database collection 'notes'")
 
 		noteCol := d.Use(ColNotes)
+		/**
 		if err := noteCol.Index([]string{"day"}); err != nil {
 			log.Info(err)
 		}
@@ -34,6 +35,10 @@ func Init(deps *config.AppDeps) *db.DB {
 			log.Info(err)
 		}
 		if err := noteCol.Index([]string{"year"}); err != nil {
+			log.Info(err)
+		}
+		*/
+		if err := noteCol.Index([]string{"key"}); err != nil {
 			log.Info(err)
 		}
 	}

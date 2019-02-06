@@ -16,8 +16,20 @@ func LoadRoutes(r *gin.Engine, deps *config.AppDeps) {
 	notes := api.Group("/notes")
 	notes.GET("/", actions.GetAllNotes)
 	notes.POST("/", actions.PostNewNode)
-	notes.GET("/:id", notImplementedYet)
-	notes.POST("/:id", notImplementedYet)
+	notes.GET("/:id", actions.GetNote)
+	notes.PATCH("/:id", notImplementedYet)
+	notes.DELETE("/:id", actions.DeleteNote)
+
+	entries := api.Group("/entries")
+	entries.POST("/:nid", actions.PostNewEntry)
+	entries.PATCH("/:nid/:eid", notImplementedYet)
+	entries.DELETE("/:nid/:eid", actions.DeleteEntry)
+
+	query := api.Group("/query")
+	notesQuery := query.Group("/notes")
+	notesQuery.GET("/:year", actions.GetQueryNote)
+	notesQuery.GET("/:year/:month", actions.GetQueryNote)
+	notesQuery.GET("/:year/:month/:day", actions.GetQueryNote)
 }
 
 func notImplementedYet(ctx *gin.Context) {
