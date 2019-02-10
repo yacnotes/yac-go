@@ -12,6 +12,9 @@ import (
 // ColNotes holds the name of the notes collection
 const ColNotes = "notes"
 
+// ColBooks holds the name of the book collection
+const ColBooks = "books"
+
 func Init(deps *config.AppDeps) *db.DB {
 	dbDir := deps.Config.DatabaseDir
 
@@ -21,26 +24,25 @@ func Init(deps *config.AppDeps) *db.DB {
 	}
 
 	if d.ColExists(ColNotes) == false {
-		if err := d.Create("notes"); err != nil {
+		if err := d.Create(ColNotes); err != nil {
 			log.Panic("Failed to create notes collection in database.")
 		}
 		log.Info("Created new database collection 'notes'")
 
 		noteCol := d.Use(ColNotes)
-		/**
-		if err := noteCol.Index([]string{"day"}); err != nil {
-			log.Info(err)
-		}
-		if err := noteCol.Index([]string{"month"}); err != nil {
-			log.Info(err)
-		}
-		if err := noteCol.Index([]string{"year"}); err != nil {
-			log.Info(err)
-		}
-		*/
 		if err := noteCol.Index([]string{"key"}); err != nil {
 			log.Info(err)
 		}
+		if err := noteCol.Index([]string{"book"}); err != nil {
+			log.Info(err)
+		}
+	}
+
+	if d.ColExists(ColBooks) == false {
+		if err := d.Create(ColBooks); err != nil {
+			log.Panic("Failed to create books collection in database.")
+		}
+		log.Info("Created new database collection 'books'")
 	}
 
 	//if err := d.Scrub("notes"); err != nil {

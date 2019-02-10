@@ -30,6 +30,11 @@ func LoadRoutes(r *gin.Engine, deps *config.AppDeps) {
 	notesQuery.GET("/:year", actions.GetQueryNote)
 	notesQuery.GET("/:year/:month", actions.GetQueryNote)
 	notesQuery.GET("/:year/:month/:day", actions.GetQueryNote)
+
+	books := api.Group("/books")
+	books.GET("/", actions.GetAllBooks)
+	books.POST("/", actions.PostNewBook)
+	books.DELETE("/:id", actions.DeleteBook)
 }
 
 func notImplementedYet(ctx *gin.Context) {

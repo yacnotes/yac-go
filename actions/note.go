@@ -13,9 +13,18 @@ func GetAllNotes(ctx *gin.Context) {
 	db := GetDepsFromCtx(ctx).Db
 
 	_, full := ctx.GetQuery("full")
+	rawBookId, ok := ctx.GetQuery("book")
+	bookId := 0
+	if ok {
+		var err error
+		bookId, err = strconv.Atoi(rawBookId)
+		if err != nil {
+			log.Panic("Error while converting string to bookId")
+		}
+	}
 
-	if full {
-		notes, err := service.GetAll(db)
+	if full || bookId != 0 {
+		notes, err := service.GetAll(db, bookId)
 		if err != nil {
 			log.Panic("Error while loading all notes:", err)
 		}
@@ -45,7 +54,7 @@ func PostNewNode(ctx *gin.Context) {
 	}
 
 	if id == 0 && otherId != 0 {
-		ctx.JSON(http.StatusPreconditionFailed, gin.H{"error": "A note for this day already exists", "id": otherId})
+		ctx.JSON(http.StatusPreconditionFailed, gin.H{"error": err.Error(), "id": otherId})
 		return
 	}
 
@@ -53,8 +62,7 @@ func PostNewNode(ctx *gin.Context) {
 }
 
 func GetNote(ctx *gin.Context) {
-	strId := ctx.Param("id")
-	nid, err := strconv.Atoi(strId)
+	nid, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -62,7 +70,7 @@ func GetNote(ctx *gin.Context) {
 
 	db := GetDepsFromCtx(ctx).Db
 
-	n, err, _ := service.GetByIdentifier(db, nid)
+	n, err := service.GetById(db, nid)
 	if err != nil {
 		ctx.Status(http.StatusNotFound)
 		return
@@ -78,6 +86,8 @@ func GetQueryNote(ctx *gin.Context) {
 	rawMonth := ctx.Param("month")
 	rawYear := ctx.Param("year")
 
+	bookId, _ := strconv.Atoi(ctx.Query("book"))
+
 	day, err := strconv.Atoi(rawDay)
 	if err != nil {
 		day = 0
@@ -91,7 +101,7 @@ func GetQueryNote(ctx *gin.Context) {
 		year = 0
 	}
 
-	notes, err := service.Query(db, year, month, day)
+	notes, err := service.Query(db, year, month, day, bookId)
 	if err != nil {
 		log.Panic("Failed to query for notes:", err)
 	}
@@ -102,14 +112,13 @@ func GetQueryNote(ctx *gin.Context) {
 func DeleteNote(ctx *gin.Context) {
 	db := GetDepsFromCtx(ctx).Db
 
-	identifier, err := strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = service.DeleteByIdentifier(db, identifier)
-	if err != nil {
+	if err = service.DeleteById(db, id); err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}

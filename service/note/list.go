@@ -1,26 +1,36 @@
 package note
 
 import (
+	"fmt"
 	"github.com/HouzuoGuo/tiedot/db"
 	"yac-go/model/note"
 	"yac-go/ydb"
 )
 
-func GetAll(d *db.DB) (map[int]*note.Note, error) {
+func GetAll(d *db.DB, bookId int) ([]Response, error) {
 	col := d.Use(ydb.ColNotes)
 
-	queryResult, err := ydb.ExecuteQuery(col, []byte(`["all"]`))
+	query := []byte(`["all"]`)
+	if bookId != 0 {
+		query = []byte(fmt.Sprintf(`{ "in": ["book"], "eq": %d }`, bookId))
+	}
+	queryResult, err := ydb.ExecuteQuery(col, query)
 	if err != nil {
 		return nil, err
 	}
 
-	notes := make(map[int]*note.Note)
+	i := 0
+	notes := make([]Response, len(queryResult))
 	for id := range queryResult {
 		n := &note.Note{}
 		if err := ydb.LoadById(col, id, n); err != nil {
 			return nil, err
 		}
-		notes[id] = n
+		notes[i] = Response{
+			Id:   id,
+			Note: n,
+		}
+		i++
 	}
 
 	return notes, nil

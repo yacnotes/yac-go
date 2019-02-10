@@ -1,11 +1,9 @@
 package note
 
 import (
-	"errors"
 	"fmt"
 	"github.com/HouzuoGuo/tiedot/db"
 	"yac-go/log"
-	"yac-go/model"
 	"yac-go/model/note"
 	"yac-go/ydb"
 )
@@ -14,22 +12,28 @@ import (
 func GetById(d *db.DB, id int) (*note.Note, error) {
 	col := d.Use(ydb.ColNotes)
 
-	res, err := col.Read(id)
-	if err != nil {
+	n := &note.Note{}
+	if err := ydb.LoadById(col, id, n); err != nil {
 		return nil, err
 	}
-
-	n := &note.Note{}
-	model.Marshal(res, &n)
 
 	return n, nil
 }
 
-// GetByKey tries to find the note with a given key
-func GetByKey(d *db.DB, key int) (*note.Note, int) {
+// GetByKey tries to find one note with a given key (and optionally book, if bookId != 0)
+func GetByKey(d *db.DB, key int, bookId int) (*note.Note, int) {
 	col := d.Use(ydb.ColNotes)
 
 	query := fmt.Sprintf(`{ "in": ["key"], "eq": %d, "limit": 1 }`, key)
+	if bookId != 0 {
+		query = fmt.Sprintf(`{
+			"n": [
+				{ "in": ["key"], "eq": %d },
+				{ "in": ["book"], "eq": %d }
+			],
+			"limit": 1
+		}`, key, bookId)
+	}
 
 	queryResult, err := ydb.ExecuteQuery(col, []byte(query))
 	if err != nil {
@@ -48,26 +52,6 @@ func GetByKey(d *db.DB, key int) (*note.Note, int) {
 	}
 
 	return n, id
-}
-
-// GetByIdentifier tries to find a note by its key or id; returns note and id
-func GetByIdentifier(d *db.DB, identifier int) (*note.Note, error, int) {
-	var n *note.Note
-	var id int
-	if identifier < 100000000 {
-		// got key
-		n, id = GetByKey(d, identifier)
-	} else {
-		// got id
-		n, _ = GetById(d, identifier)
-		id = identifier
-	}
-
-	if n == nil {
-		return nil, errors.New("note not found"), 0
-	}
-
-	return n, nil, id
 }
 
 func getId(m map[int]struct{}) int {
