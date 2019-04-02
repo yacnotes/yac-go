@@ -21,15 +21,15 @@ func GetById(d *db.DB, id int) (*note.Note, error) {
 }
 
 // GetByKey tries to find one note with a given key (and optionally book, if bookId != 0)
-func GetByKey(d *db.DB, key int, bookId int) (*note.Note, int) {
+func GetByKey(d *db.DB, key int, bookId string) (*note.Note, int) {
 	col := d.Use(ydb.ColNotes)
 
 	query := fmt.Sprintf(`{ "in": ["key"], "eq": %d, "limit": 1 }`, key)
-	if bookId != 0 {
+	if bookId != "" {
 		query = fmt.Sprintf(`{
 			"n": [
 				{ "in": ["key"], "eq": %d },
-				{ "in": ["book"], "eq": %d }
+				{ "in": ["book"], "eq": "%s" }
 			],
 			"limit": 1
 		}`, key, bookId)

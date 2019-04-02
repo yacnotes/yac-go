@@ -3,6 +3,7 @@ package note
 import (
 	"errors"
 	"github.com/HouzuoGuo/tiedot/db"
+	"strconv"
 	"yac-go/model"
 	"yac-go/model/note"
 	"yac-go/service/book"
@@ -19,10 +20,13 @@ func Add(d *db.DB, n *note.Note) (int, int, error) {
 		return 0, oldId, errors.New("already have note for that day")
 	}
 
-	_, err := book.Get(d, n.Book)
-	if err != nil {
-		return 0, n.Book, errors.New("invalid book id")
+	if bookRealId, err := strconv.Atoi(n.Book); err == nil {
+		_, err := book.Get(d, bookRealId)
+		if err != nil {
+			return 0, bookRealId, errors.New("invalid book id")
+		}
 	}
+
 
 	injectEntryIds(n)
 

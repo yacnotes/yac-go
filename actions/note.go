@@ -13,17 +13,9 @@ func GetAllNotes(ctx *gin.Context) {
 	db := GetDepsFromCtx(ctx).Db
 
 	_, full := ctx.GetQuery("full")
-	rawBookId, ok := ctx.GetQuery("book")
-	bookId := 0
-	if ok {
-		var err error
-		bookId, err = strconv.Atoi(rawBookId)
-		if err != nil {
-			log.Panic("Error while converting string to bookId")
-		}
-	}
+	bookId, _ := ctx.GetQuery("book")
 
-	if full || bookId != 0 {
+	if full || bookId != "" {
 		notes, err := service.GetAll(db, bookId)
 		if err != nil {
 			log.Panic("Error while loading all notes:", err)
@@ -86,7 +78,7 @@ func GetQueryNote(ctx *gin.Context) {
 	rawMonth := ctx.Param("month")
 	rawYear := ctx.Param("year")
 
-	bookId, _ := strconv.Atoi(ctx.Query("book"))
+	bookId := ctx.Query("book")
 
 	day, err := strconv.Atoi(rawDay)
 	if err != nil {

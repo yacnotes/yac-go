@@ -3,16 +3,17 @@ package note
 import (
 	"fmt"
 	"github.com/HouzuoGuo/tiedot/db"
+	"yac-go/log"
 	"yac-go/model/note"
 	"yac-go/ydb"
 )
 
-func GetAll(d *db.DB, bookId int) ([]Response, error) {
+func GetAll(d *db.DB, bookId string) ([]Response, error) {
 	col := d.Use(ydb.ColNotes)
 
 	query := []byte(`["all"]`)
-	if bookId != 0 {
-		query = []byte(fmt.Sprintf(`{ "in": ["book"], "eq": %d }`, bookId))
+	if bookId != "" {
+		query = []byte(fmt.Sprintf(`{ "in": ["book"], "eq": "%s" }`, bookId))
 	}
 	queryResult, err := ydb.ExecuteQuery(col, query)
 	if err != nil {

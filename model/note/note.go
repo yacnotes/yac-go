@@ -7,7 +7,7 @@ import (
 type Note struct {
 	Key       int        `json:"key"`
 	CreatedAt *time.Time `json:"createdAt" binding:"required"`
-	Book      int        `json:"book" binding:"required"`
+	Book      string     `json:"book" binding:"required"`
 	Entries   []*Entry   `json:"entries" binding:"required"`
 }
 
@@ -17,7 +17,7 @@ func EmptyNote() *Note {
 	note := &Note{
 		Key:       MakeKey(&t),
 		CreatedAt: &t,
-		Book:      0,
+		Book:      "",
 	}
 
 	return note

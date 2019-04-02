@@ -8,16 +8,16 @@ import (
 	"yac-go/ydb"
 )
 
-func Query(d *db.DB, year, month, day, bookId int) ([]Response, error) {
+func Query(d *db.DB, year, month, day int, bookId string) ([]Response, error) {
 	col := d.Use(ydb.ColNotes)
 
 	start, end := calcRange(year, month, day)
 	rawQuery := fmt.Sprintf(`{"int-from": %d, "int-to": %d, "in": ["key"]}`, start, end)
-	if bookId != 0 {
+	if bookId != "" {
 		rawQuery = fmt.Sprintf(`{
 			"n": [
 				%s,
-				{ "in": ["book"], "eq": %d }
+				{ "in": ["book"], "eq": "%s" }
 			]
 		}`, rawQuery, bookId)
 	}

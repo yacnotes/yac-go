@@ -55,7 +55,7 @@ func DeleteBook(ctx *gin.Context) {
 
 	// delete notes from book
 	// this does not happen in book server because it will cause an import cycle
-	notes, err := note.GetAll(db, id)
+	notes, err := note.GetAll(db, ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
