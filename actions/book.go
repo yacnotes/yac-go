@@ -7,6 +7,7 @@ import (
 	"yac-go/log"
 	"yac-go/model/book"
 	service "yac-go/service/book"
+	"yac-go/service/note"
 )
 
 func PostNewBook(ctx *gin.Context) {
@@ -46,9 +47,25 @@ func DeleteBook(ctx *gin.Context) {
 		return
 	}
 
+	// delete book
 	if err := service.Delete(db, id); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// delete notes from book
+	// this does not happen in book server because it will cause an import cycle
+	notes, err := note.GetAll(db, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, n := range notes {
+		if err := note.DeleteById(db, n.Id); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	ctx.Status(http.StatusOK)

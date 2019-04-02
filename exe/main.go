@@ -26,7 +26,7 @@ func main() {
 	log.Info("Application version:", APP_VERSION)
 
 	if conf.Env == "release" {
-		gin.SetMode(conf.Env)
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	deps := &config.AppDeps{
